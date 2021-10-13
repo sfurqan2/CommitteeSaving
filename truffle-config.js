@@ -45,7 +45,7 @@ module.exports = {
           "https://rinkeby.infura.io/v3/3842168f5d5041a3a504336758362583"
         );
       },
-      networkCheckTimeout: 10000,
+      networkCheckTimeout: 20000,
       network_id: 4,
     },
     loom_testnet: {

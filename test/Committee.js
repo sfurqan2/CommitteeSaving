@@ -76,6 +76,7 @@ contract("Committee", (accounts) => {
         });
 
         it("stakeholder should succeed", async() => {
+            
             const result = await contractInstance.createCommittee("Random", Mike, web3.utils.toWei("0.0002", "ether"), {
                 from: Bob,
                 value: web3.utils.toWei("0.0002", "ether")

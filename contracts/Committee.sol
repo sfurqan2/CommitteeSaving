@@ -1,10 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-contract Committee{
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract Committee is Ownable{
 
     event newCommittee(uint256 committeeId, string name, uint balance, address stakeholder, uint256 submitAmount);
     event amountWithdrawed(address stakeholder, uint balance);
+
+    modifier onlyOwnerOf(uint _committeeId) {
+        require(msg.sender == committeeToOwner[_committeeId]);
+        _;
+    }
 
     struct CommitteeStruct{
         string name;
@@ -17,6 +24,7 @@ contract Committee{
 
     uint256 numCommittees;
     mapping(uint256 => CommitteeStruct) public committees;
+    mapping(uint256 => address) public committeeToOwner;
 
 
     function createCommittee(string memory name, address stakeholder, uint256 submitAmount) payable public {
@@ -30,6 +38,9 @@ contract Committee{
 
         committee.participants.push(stakeholder);
         committee.approvals[stakeholder] = true;
+
+        committeeToOwner[numCommittees - 1] = msg.sender;
+
         emit newCommittee(numCommittees-1, name, msg.value, stakeholder, submitAmount);
     }
 
@@ -38,11 +49,17 @@ contract Committee{
         require(msg.value == committees[committeeId].submitAmount, "Amount not equal to the required amount!");
         committees[committeeId].participants.push(msg.sender);
         committees[committeeId].approvals[msg.sender] = false;
+        committees[committeeId].balance += msg.value;
+    }
 
-        if(msg.sender != committees[committeeId].stakeholder){
-            committees[committeeId].balance += msg.value;
-        }
+    function deposit(uint256 committeeId) payable public {
+        require(msg.value == committees[committeeId].submitAmount, "Amount not equal to the required amount!");
+        committees[committeeId].approvals[msg.sender] = false;
+        committees[committeeId].balance += msg.value;
+    }
 
+    function changeStakeholder(uint256 committeeId, address newStakeholder) public onlyOwnerOf(committeeId){
+        committees[committeeId].stakeholder = newStakeholder;
     }
 
     function approveWithdrawal(uint256 committeeId) public {
